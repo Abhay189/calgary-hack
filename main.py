@@ -1,21 +1,45 @@
 from ultralytics import YOLO
 import cv2
 import math
+import os
+# import sys
+# other imports remain the same
 
+# Use the first command-line argument as the video path
 # Load a video file instead of webcam
-video_path = './Videos/PXL_20240218_012740321.mp4'  # Replace with your video file path
-cap = cv2.VideoCapture(video_path)
+video_path = './Videos/PXL_20240218_011715025.mp4'  # Replace with your video file path
+# video_path = ''
+# # Check if the video path was provided as a command-line argument
+# if len(sys.argv) > 1:
+#     video_path = sys.argv[1]
+# else:
+#     print("Please provide a video path as a command-line argument.")
+    # sys.exit(1)  # Exit the script if no argument is provided
 
-# Set resolution - remove if you want to use the video's original resolution
-cap.set(3, 640)  # Width
-cap.set(4, 480)  # Height
+cap = cv2.VideoCapture(video_path)
+video_filename_with_extension = os.path.basename(video_path)
+
+# Get video properties to use with the video writer
+frame_width = int(cap.get(3))
+frame_height = int(cap.get(4))
+fps = int(cap.get(cv2.CAP_PROP_FPS))
+
+# Define the codec for MP4 format and create VideoWriter object
+# Note: On some systems, you might need to use 'avc1' instead of 'mp4v' as the codec.
+# final_video_path = f"./processed_video/{video_path}"
+out = cv2.VideoWriter(f'{video_filename_with_extension}', cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
+
 
 # model
 model = YOLO("yolo-Weights/yolov8n.pt")
 
 # object classes
-classNames = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign" , "bicycle"]
-interested_classes = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign" , "bicycle"]
+classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+              "traffic light", "fire hydrant", "stop sign"]
+
+interested_classes = {"person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
+              "traffic light", "fire hydrant", "stop sign"}
+
 
 while True:
     success, img = cap.read()
@@ -52,13 +76,11 @@ while True:
                     thickness = 2
 
                     cv2.putText(img, f"{classNames[cls]}: {confidence:.2f}", org, font, fontScale, color, thickness)
-                else:
-                    print("Detected class not in interested classes:", classNames[cls] if cls < len(classNames) else "Unknown")
 
+    # Write the frame with detections to the output video
+    out.write(img)
 
-    cv2.imshow('Video', img)
-    if cv2.waitKey(1) == ord('q'):
-        break
-
+# Release everything when job is finished
 cap.release()
+out.release()
 cv2.destroyAllWindows()
