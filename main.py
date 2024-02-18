@@ -14,17 +14,8 @@ cap.set(4, 480)  # Height
 model = YOLO("yolo-Weights/yolov8n.pt")
 
 # object classes
-classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-              "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
-              "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe", "backpack", "umbrella",
-              "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball", "kite", "baseball bat",
-              "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass", "cup",
-              "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli",
-              "carrot", "hot dog", "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed",
-              "diningtable", "toilet", "tvmonitor", "laptop", "mouse", "remote", "keyboard", "cell phone",
-              "microwave", "oven", "toaster", "sink", "refrigerator", "book", "clock", "vase", "scissors",
-              "teddy bear", "hair drier", "toothbrush"
-              ]
+classNames = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign"]
+interested_classes = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign"]
 
 while True:
     success, img = cap.read()
@@ -43,25 +34,27 @@ while True:
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)  # convert to int values
 
-            # put box in cam
-            cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
-
             # confidence
             confidence = math.ceil((box.conf[0]*100))/100
             print("Confidence --->", confidence)
 
-            # class name
-            cls = int(box.cls[0])
-            print("Class name -->", classNames[cls])
+            if len(box.cls) > 0:
+                cls = int(box.cls[0])
+                if cls < len(classNames) and classNames[cls] in interested_classes:
+                    print("Class name -->", classNames[cls])
 
-            # object details
-            org = [x1, y1]
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            fontScale = 1
-            color = (255, 0, 0)
-            thickness = 2
+                    # Only draw box and label if the detected class is within the interested classes
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+                    org = [x1, y1]
+                    font = cv2.FONT_HERSHEY_SIMPLEX
+                    fontScale = 1
+                    color = (255, 0, 0)
+                    thickness = 2
 
-            cv2.putText(img, classNames[cls], org, font, fontScale, color, thickness)
+                    cv2.putText(img, f"{classNames[cls]}: {confidence:.2f}", org, font, fontScale, color, thickness)
+                else:
+                    print("Detected class not in interested classes:", classNames[cls] if cls < len(classNames) else "Unknown")
+
 
     cv2.imshow('Video', img)
     if cv2.waitKey(1) == ord('q'):
