@@ -2,33 +2,15 @@ from ultralytics import YOLO
 import cv2
 import math
 import os
-# import sys
-# other imports remain the same
 
-# Use the first command-line argument as the video path
-# Load a video file instead of webcam
-video_path = 'videos/scene6_pov.mp4'  # Replace with your video file path
-# video_path = ''
-# # Check if the video path was provided as a command-line argument
-# if len(sys.argv) > 1:
-#     video_path = sys.argv[1]
-# else:
-#     print("Please provide a video path as a command-line argument.")
-    # sys.exit(1)  # Exit the script if no argument is provided
+# Initialize webcam capture
+cap = cv2.VideoCapture(0)  # 0 is usually the default camera
 
-cap = cv2.VideoCapture(video_path)
-video_filename_with_extension = os.path.basename(video_path)
+# Create a window named 'Frame'
+cv2.namedWindow("Frame", cv2.WINDOW_NORMAL)
 
-# Get video properties to use with the video writer
-frame_width = int(cap.get(3))
-frame_height = int(cap.get(4))
-fps = int(cap.get(cv2.CAP_PROP_FPS))
-
-# Define the codec for MP4 format and create VideoWriter object
-# Note: On some systems, you might need to use 'avc1' instead of 'mp4v' as the codec.
-# final_video_path = f"./processed_video/{video_path}"
-out = cv2.VideoWriter(f'{video_filename_with_extension}', cv2.VideoWriter_fourcc(*'mp4v'), fps, (frame_width, frame_height))
-
+# Set the window to fullscreen
+cv2.setWindowProperty("Frame", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
 
 # model
 model = YOLO("yolo-Weights/yolov8n.pt")
@@ -42,8 +24,10 @@ min_confidence = 0.5
 while True:
     success, img = cap.read()
     if not success:
-        print("Finished processing video.")
-        break  # Exit the loop if video ends or there's an error
+        break  # Exit the loop if there's an error
+
+    # Resize the frame to 1920x1080 for fullscreen display
+    img = cv2.resize(img, (1920, 1080))
 
     results = model(img, stream=True)
 
@@ -76,10 +60,13 @@ while True:
 
                         cv2.putText(img, f"{classNames[cls]}: {confidence:.2f}", org, font, fontScale, color, thickness)
 
-    # Write the frame with detections to the output video
-    out.write(img)
+    # Display the frame with detections
+    cv2.imshow("Frame", img)
+
+    # Break the loop when 'q' is pressed
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 # Release everything when job is finished
 cap.release()
-out.release()
 cv2.destroyAllWindows()
