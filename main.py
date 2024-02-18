@@ -7,7 +7,7 @@ import os
 
 # Use the first command-line argument as the video path
 # Load a video file instead of webcam
-video_path = './Videos/PXL_20240218_011715025.mp4'  # Replace with your video file path
+video_path = 'videos/scene6_pov.mp4'  # Replace with your video file path
 # video_path = ''
 # # Check if the video path was provided as a command-line argument
 # if len(sys.argv) > 1:
@@ -34,12 +34,10 @@ out = cv2.VideoWriter(f'{video_filename_with_extension}', cv2.VideoWriter_fourcc
 model = YOLO("yolo-Weights/yolov8n.pt")
 
 # object classes
-classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-              "traffic light", "fire hydrant", "stop sign"]
+classNames = ["person", "bicycle", "car",  "bus"]
 
-interested_classes = {"person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
-              "traffic light", "fire hydrant", "stop sign"}
-
+interested_classes = {"person", "bicycle", "car", "bus"}
+min_confidence = 0.5
 
 while True:
     success, img = cap.read()
@@ -62,20 +60,21 @@ while True:
             confidence = math.ceil((box.conf[0]*100))/100
             print("Confidence --->", confidence)
 
-            if len(box.cls) > 0:
-                cls = int(box.cls[0])
-                if cls < len(classNames) and classNames[cls] in interested_classes:
-                    print("Class name -->", classNames[cls])
+            if confidence >= min_confidence:
+                if len(box.cls) > 0:
+                    cls = int(box.cls[0])
+                    if cls < len(classNames) and classNames[cls] in interested_classes:
+                        print("Class name -->", classNames[cls])
 
-                    # Only draw box and label if the detected class is within the interested classes
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
-                    org = [x1, y1]
-                    font = cv2.FONT_HERSHEY_SIMPLEX
-                    fontScale = 1
-                    color = (255, 0, 0)
-                    thickness = 2
+                        # Only draw box and label if the detected class is within the interested classes
+                        cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 255), 3)
+                        org = [x1, y1]
+                        font = cv2.FONT_HERSHEY_SIMPLEX
+                        fontScale = 1
+                        color = (255, 0, 0)
+                        thickness = 2
 
-                    cv2.putText(img, f"{classNames[cls]}: {confidence:.2f}", org, font, fontScale, color, thickness)
+                        cv2.putText(img, f"{classNames[cls]}: {confidence:.2f}", org, font, fontScale, color, thickness)
 
     # Write the frame with detections to the output video
     out.write(img)
