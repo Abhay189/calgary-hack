@@ -14,8 +14,8 @@ cap.set(4, 480)  # Height
 model = YOLO("yolo-Weights/yolov8n.pt")
 
 # object classes
-classNames = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign"]
-interested_classes = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign"]
+classNames = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign" , "bicycle"]
+interested_classes = ["person", "bicycle", "car" , "truck" ,"motorcycle" , "traffic light" ,"stop sign" , "bicycle"]
 
 while True:
     success, img = cap.read()
